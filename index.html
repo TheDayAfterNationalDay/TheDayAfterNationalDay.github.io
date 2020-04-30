@@ -5,8 +5,7 @@
     <title>FRT快递计算器</title>
 </head>
 <body>
-<script lang="javascript">
-
+<script>
     // 0 Jita 运输点：Jita IV - Moon 4 - Caldari Navy Assembly Plant（吉他海四空间站）
     // 1 RF-X7V 运输点：RF-X7V - forum.winterco.org（集结点星城）
     // 2 维纳尔 N5Y 任务点：N5Y-4N - xingcheng（星城）
@@ -15,10 +14,8 @@
     // 5 特纳生产区 NCG-PW：NCG-PW - Seal of the North（星城）
     // 6 血脉 BKG-Q2 北方集结点：BKG-Q2 - Trit Star (星城）
     // 7 低安递送点 （临时）：Egbinger XI - Moon 3 - CBD Corporation Storage ,
-    // 8 低安递送点 （临时）：Podion VIII - Moon 15 - Nefantar Miner Association Mining Outpost （空间站）
-
     let costArray = [
-        //to:             Jita,   RF,  N5Y,  H-E,  OSY,  NCG,  BKG, Egbi, Podi
+        //to:           Jita,   RF,  N5Y,  H-E,  OSY,  NCG,  BKG, Egbi, Podi
         /*from Jita*/   [0, 1400, 1000, 500, 1300, 1400, 1400, 0, 0],
         /*from RF*/     [1000, 0, 0, 0, 0, 0, 0, 0, 0],
         /*from N5Y*/    [600, 0, 0, 0, 0, 600, 600, 0, 0],
@@ -29,6 +26,25 @@
         /*from Egbin*/  [0, 1600, 0, 0, 0, 0, 0, 0, 0],
         /*from Podion*/ [0, 2000, 0, 0, 0, 0, 0, 0, 0],
     ];
+
+    // 8 低安递送点 （临时）：Podion VIII - Moon 15 - Nefantar Miner Association Mining Outpost （空间站）
+    window.onload = function () {
+        let startSelect = document.getElementById("start");
+        let destination = document.getElementById("destination");
+        startSelect.addEventListener("change", function () {
+            for (let i = 0; i < destination.options.length; i++) {
+                destination.options[i].disabled = (costArray[startSelect.selectedIndex][i] === 0);
+            }
+
+            let firstAvailableIndex;
+            for (firstAvailableIndex = 0; firstAvailableIndex < destination.options.length; firstAvailableIndex++) {
+                if (costArray[startSelect.selectedIndex][firstAvailableIndex] !== 0) {
+                    break;
+                }
+            }
+            destination.selectedIndex = firstAvailableIndex;
+        });
+    }
 
     function calculate() {
         let start = document.getElementById("start").selectedIndex;
