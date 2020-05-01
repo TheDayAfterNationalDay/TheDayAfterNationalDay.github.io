@@ -69,8 +69,11 @@
         if (cost < 5000000) {
             cost = 5000000;
         }
-        document.getElementById("cost").value = cost;
-
+        document.getElementById("cost").value = format(cost);
+    }
+    
+    function format(num) {
+        return (num.toString().indexOf('.') !== -1) ? num.toLocaleString() : num.toString().replace(/(\d)(?=(?:\d{3})+$)/g, '$1,');
     }
 </script>
 <label for="start">
