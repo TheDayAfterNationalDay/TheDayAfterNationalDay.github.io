@@ -14,6 +14,8 @@
     // 5 特纳生产区 NCG-PW：NCG-PW - Seal of the North（星城）
     // 6 血脉 BKG-Q2 北方集结点：BKG-Q2 - Trit Star (星城）
     // 7 低安递送点 （临时）：Egbinger XI - Moon 3 - CBD Corporation Storage ,
+    // 8 低安递送点 （临时）：Podion VIII - Moon 15 - Nefantar Miner Association Mining Outpost （空间站）
+
     let costArray = [
         //to:           Jita,   RF,  N5Y,  H-E,  OSY,  NCG,  BKG, Egbi, Podi
         /*from Jita*/   [0, 1400, 1000, 500, 1300, 1400, 1400, 0, 0],
@@ -27,54 +29,78 @@
         /*from Podion*/ [0, 2000, 0, 0, 0, 0, 0, 0, 0],
     ];
 
-    // 8 低安递送点 （临时）：Podion VIII - Moon 15 - Nefantar Miner Association Mining Outpost （空间站）
-    window.onload = function () {
-        let startSelect = document.getElementById("start");
-        let destination = document.getElementById("destination");
-        startSelect.addEventListener("change", function () {
-            for (let i = 0; i < destination.options.length; i++) {
-                destination.options[i].disabled = (costArray[startSelect.selectedIndex][i] === 0);
-            }
+    let startSelect;
+    let destinationSelect;
 
-            let firstAvailableIndex;
-            for (firstAvailableIndex = 0; firstAvailableIndex < destination.options.length; firstAvailableIndex++) {
-                if (costArray[startSelect.selectedIndex][firstAvailableIndex] !== 0) {
-                    break;
-                }
-            }
-            destination.selectedIndex = firstAvailableIndex;
-        });
+    window.onload = function () {
+        startSelect = document.getElementById("start");
+        destinationSelect = document.getElementById("destination");
+        disableUnavailableDestination();
+        startSelect.addEventListener("change", disableUnavailableDestination);
     }
 
     function calculate() {
         let start = document.getElementById("start").selectedIndex;
         let destination = document.getElementById("destination").selectedIndex;
-        let estimatedPrice = document.getElementById("price").value;
-        let volume = document.getElementById("volume").value;
-        let cost = costArray[start][destination] * volume;
+        let estimatedPriceInput = document.getElementById("price");
+        let volumeInput = document.getElementById("volume");
+        let cost = costArray[start][destination] * volumeInput.value;
 
-        if (volume > 340000) {
-            alert("超过单个订单体积上限！");
+        if (volumeInput.value > 340000) {
+            volumeInput.value = removeLastChar(volumeInput.value);
+            alert("超过单个订单体积上限（340000m3）！");
             return;
-        } else if (estimatedPrice > 5000000000) {
-            alert("超过单个订单保证金上限！如果包含蓝图，请将蓝图另挂合同！");
+        } else if (estimatedPriceInput.value > 5000000000) {
+            estimatedPriceInput.value = removeLastChar(estimatedPriceInput.value);
+            alert("超过单个订单保证金上限（5b）！如果包含蓝图，请将蓝图另挂合同！");
             return;
         } else if (costArray[start][destination] === 0) {
             alert("快递公司不支持当前路径，建议以Jita为起/终点进行快递！");
             return;
         }
+        //如果终点为Jita，添加百分比估价的运费
         if (destination === 0) {
-            cost += 0.02 * estimatedPrice;
+            cost += 0.02 * estimatedPriceInput.value;
         }
+        //运费不得少于5m
         if (cost < 5000000) {
             cost = 5000000;
         }
-        document.getElementById("cost").value = format(cost);
+        //给运费添加千位分隔符并输出
+        document.getElementById("cost").value = formatCost(cost);
     }
-    
-    function format(num) {
+
+    //根据起点空间站禁用不可用的终点空间站
+    function disableUnavailableDestination() {
+        console.log("startSelect=" + startSelect.value + "," + "destinationSelect=" + destinationSelect.value);
+        for (let i = 0; i < destinationSelect.options.length; i++) {
+            destinationSelect.options[i].disabled = (costArray[startSelect.selectedIndex][i] === 0);
+        }
+
+        let firstAvailableIndex;
+        for (firstAvailableIndex = 0; firstAvailableIndex < destinationSelect.options.length; firstAvailableIndex++) {
+            if (costArray[startSelect.selectedIndex][firstAvailableIndex] !== 0) {
+                break;
+            }
+        }
+        destinationSelect.selectedIndex = firstAvailableIndex;
+    }
+
+    //格式化数字，添加千位分隔符
+    function formatCost(num) {
         return (num.toString().indexOf('.') !== -1) ? num.toLocaleString() : num.toString().replace(/(\d)(?=(?:\d{3})+$)/g, '$1,');
     }
+
+    //移除字符串最后一位
+    function removeLastChar(string) {
+        if (string) {
+            string = string.toString();
+            return string.substring(0, string.length - 1);
+        } else {
+            return "";
+        }
+    }
+
 </script>
 <label for="start">
     起点：
@@ -102,10 +128,9 @@
         <option value="8">低安递送点 （临时）：Podion VIII - Moon 15 - Nefantar Miner Association Mining Outpost （空间站）</option>
     </select><br>
 
-    估价（起点为Jita则填0）：<input type="text" id="price" value="0"/><br>
-    体积：<input type="text" id="volume" value="0"/><br>
-    <button onclick="calculate()">计算</button>
-    <br>
+    估价（起点为Jita则填0）：<input type="text" id="price" value="0" oninput="calculate()"/><br>
+    体积：<input type="text" id="volume" value="0" oninput="calculate()"/><br>
+    <button onclick="calculate()">计算</button><br>
 </label>
 
 <label>
