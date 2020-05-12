@@ -15,7 +15,8 @@
     // 6 血脉 BKG-Q2 北方集结点：BKG-Q2 - Trit Star (星城）
     // 7 低安递送点 （临时）：Egbinger XI - Moon 3 - CBD Corporation Storage ,
     // 8 低安递送点 （临时）：Podion VIII - Moon 15 - Nefantar Miner Association Mining Outpost （空间站）
-
+    // e.g.1 costArray[0][1]指的是从Jita到RF的每方快递运费
+    // e.g.2 costArray[0][7]为0表示从Jita到Egbinger的快递路线不可用
     let costArray = [
         //to:           Jita,   RF,  N5Y,  H-E,  OSY,  NCG,  BKG, Egbi, Podi
         /*from Jita*/   [0, 1400, 1000, 500, 1300, 1400, 1400, 0, 0],
@@ -29,29 +30,33 @@
         /*from Podion*/ [0, 2000, 0, 0, 0, 0, 0, 0, 0],
     ];
 
-    let startSelect;
-    let destinationSelect;
+
+    let VOLUME_MAX = 340000;//快递最大体积
+    let ESTIMATED_PRICE_MAX = 5000000000;//快递最大保证金额
+
+    let startSelect;//起点选择控件
+    let destinationSelect;//终点选择控件
 
     window.onload = function () {
-        startSelect = document.getElementById("start");
-        destinationSelect = document.getElementById("destination");
-        disableUnavailableDestination();
-        startSelect.addEventListener("change", disableUnavailableDestination);
+        startSelect = document.getElementById("start");//初始化
+        destinationSelect = document.getElementById("destination");//初始化
+        disableUnavailableDestination();//根据选择的起点禁用不支持的终点
+        startSelect.addEventListener("change", disableUnavailableDestination);//添加监听器：每当起点改变时，禁用不支持的终点
     }
 
-    function calculate() {
-        let start = document.getElementById("start").selectedIndex;
-        let destination = document.getElementById("destination").selectedIndex;
-        let estimatedPriceInput = document.getElementById("price");
-        let volumeInput = document.getElementById("volume");
-        let cost = costArray[start][destination] * volumeInput.value;
+    function calculate() {//计算运费并显示运费
+        let start = document.getElementById("start").selectedIndex;//起点空间站的索引
+        let destination = document.getElementById("destination").selectedIndex;//终点空间站的索引
+        let estimatedPriceInput = document.getElementById("price");//保证金（估价）文本框
+        let volumeInput = document.getElementById("volume");//体积文本框
+        let cost = costArray[start][destination] * volumeInput.value;//基于体积计算运费
 
-        if (volumeInput.value > 340000) {
-            volumeInput.value = removeLastChar(volumeInput.value);
+        if (volumeInput.value > VOLUME_MAX) {
+            volumeInput.value = removeLastChar(volumeInput.value);//订单体积太大时移除订单体积的最后一位数字
             alert("超过单个订单体积上限（340000m3）！");
             return;
-        } else if (estimatedPriceInput.value > 5000000000) {
-            estimatedPriceInput.value = removeLastChar(estimatedPriceInput.value);
+        } else if (estimatedPriceInput.value > ESTIMATED_PRICE_MAX) {
+            estimatedPriceInput.value = removeLastChar(estimatedPriceInput.value);//保证金太多时移除保证金的最后一位数字
             alert("超过单个订单保证金上限（5b）！如果包含蓝图，请将蓝图另挂合同！");
             return;
         } else if (costArray[start][destination] === 0) {
@@ -72,11 +77,12 @@
 
     //根据起点空间站禁用不可用的终点空间站
     function disableUnavailableDestination() {
-        console.log("startSelect=" + startSelect.value + "," + "destinationSelect=" + destinationSelect.value);
+        // console.log("startSelect=" + startSelect.value + "," + "destinationSelect=" + destinationSelect.value);
         for (let i = 0; i < destinationSelect.options.length; i++) {
-            destinationSelect.options[i].disabled = (costArray[startSelect.selectedIndex][i] === 0);
+            destinationSelect.options[i].disabled = (costArray[startSelect.selectedIndex][i] === 0);//如果不可用（运费为0），则禁用该空间站
         }
 
+        //使终点选择控件选中第一个可用的终点空间站
         let firstAvailableIndex;
         for (firstAvailableIndex = 0; firstAvailableIndex < destinationSelect.options.length; firstAvailableIndex++) {
             if (costArray[startSelect.selectedIndex][firstAvailableIndex] !== 0) {
