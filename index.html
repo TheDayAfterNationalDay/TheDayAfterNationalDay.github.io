@@ -5,7 +5,9 @@
 			var inter;
 		    function check() {
 				var xmlhttp = new XMLHttpRequest();
-				var url = "https://yz.chsi.com.cn/apply/code/cjcxshouyedw/22.json";
+			    	var province = 1;
+			    	var id = 1;
+				var url = "https://yz.chsi.com.cn/apply/code/cjcxshouyedw/" + province + ".json";
 				xmlhttp.open("GET",url,true);//方法，接口，异步
 				xmlhttp.send();//发送请求
 				xmlhttp.onreadystatechange = function() {
@@ -13,7 +15,7 @@
 				    	var result=JSON.parse(xmlhttp.response); //获取到的json数据
 						result = result["dms"];
 						console.log(result);
-						if(result[11]["kg"] == 1) {
+						if(result[id]["kg"] == 1) {
 							document.getElementById("json").innerHTML = "上次访问于: " + Date() + "<br>" + "已开放查询" + "<br>" + JSON.stringify(result[11], null, 4);
 							clearInterval(inter);
 							setInterval("beep()","2000");
