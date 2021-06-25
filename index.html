@@ -16,11 +16,11 @@
 						result = result["dms"];
 						console.log(result);
 						if(result[id]["kg"] == 1) {
-							document.getElementById("json").innerHTML = "上次访问于: " + Date() + "<br>" + "已开放查询" + "<br>" + JSON.stringify(result[11], null, 4);
+							document.getElementById("json").innerHTML = "上次访问于: " + Date() + "<br>" + "已开放查询" + "<br>" + JSON.stringify(result[id], null, 4);
 							clearInterval(inter);
 							setInterval("beep()","2000");
 						} else {
-							document.getElementById("json").innerHTML = "上次访问于: " + Date() + "<br>" + "尚未开放查询" + "<br>" + JSON.stringify(result[11], null, 4);
+							document.getElementById("json").innerHTML = "上次访问于: " + Date() + "<br>" + "尚未开放查询" + "<br>" + JSON.stringify(result[id], null, 4);
 						}
 					}
 				};
